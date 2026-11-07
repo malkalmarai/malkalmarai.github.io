@@ -959,14 +959,16 @@ Amazon Now و Amazon Bazaar
     if (x.t === P) sc += 120; else if (x.t.startsWith(P)) sc += 60; else if (x.t.includes(P)) sc += 40;
     if (x.s === P) sc += 50; else if (x.s.includes(P)) sc += 30;
     if (x.g === P) sc += 40; else if (x.g.includes(P)) sc += 25;
+    // نص صفحة العمل الطويل ينحسب بالعبارة كاملة بس، عشان كلمات متفرقة ما تطلّع نتيجة
+    const inDoc = x.d.includes(P);
     for (const w of W) {
       const w2 = w.length > 4 && w.startsWith('ال') ? w.slice(2) : null; // «القطاع» تلقى «قطاع»
       const inn = hay => hay.includes(w) || (w2 && hay.includes(w2));
-      const inT = inn(x.t), inG = inn(x.g), inS = inn(x.s), inC = inn(x.c), inD = inn(x.d);
-      if (!(inT || inG || inS || inC || inD)) return -1;
-      sc += (inT ? 18 : 0) + (inG ? 12 : 0) + (inS ? 10 : 0) + (inC ? 6 : 0) + (inD ? 2 : 0) + (has(x.t, w) ? 4 : 0);
+      const inT = inn(x.t), inG = inn(x.g), inS = inn(x.s), inC = inn(x.c);
+      if (!(inT || inG || inS || inC || inDoc)) return -1;
+      sc += (inT ? 18 : 0) + (inG ? 12 : 0) + (inS ? 10 : 0) + (inC ? 6 : 0) + (has(x.t, w) ? 4 : 0);
     }
-    return sc;
+    return sc + (inDoc ? 4 : 0);
   };
   let qt;
   const runSearch = () => {
