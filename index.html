@@ -977,5 +977,23 @@ Amazon Now و Amazon Bazaar
   lb.addEventListener('close', () => { lbImg.removeAttribute('src'); if (lbFrom && document.contains(lbFrom)) lbFrom.focus({ preventScroll: true }); lbFrom = null; });
 })();
 </script>
+<!-- إحصاءات الزيارات: GoatCounter -->
+<script data-goatcounter="https://malkalmarai.goatcounter.com/count" data-goatcounter-settings='{"no_onload": true}' async src="//gc.zgo.at/count.js"></script>
+<script>
+/* العدّ: أول تحميل للصفحة ينحسب مرة، وكل صفحة عمل أو دراسة حالة تنحسب لحالها كل ما تنفتح.
+   المسار معرّف الصفحة (مثل /#w-S27) والعنوان عنوانها الظاهر، فالبطاقات الموجزة ما يدخل الإحصاءات منها شي. */
+(() => {
+  const q = [];
+  const send = (path, title) => { const gc = window.goatcounter; if (gc && gc.count) gc.count({ path, title }); else q.push({ path, title }); };
+  document.querySelector('script[data-goatcounter]').addEventListener('load', () => { const gc = window.goatcounter; if (gc && gc.count) while (q.length) gc.count(q.shift()); });
+  const sendView = v => send('/#' + v.id, v.querySelector('h2').textContent.trim());
+  const openView = () => document.querySelector('article.view:not([hidden])');
+  let shown = openView();
+  if (shown) sendView(shown); else send('/', document.title);
+  // العمل ينحسب لما تتغير الصفحة المفتوحة بس، فإعادة فتح نفس الصفحة أثناء التنقل ما تتكرر
+  new MutationObserver(() => { const v = openView(); if (v && v !== shown) sendView(v); shown = v; })
+    .observe(document.getElementById('views'), { subtree: true, attributes: true, attributeFilter: ['hidden'] });
+})();
+</script>
 </body>
 </html>
