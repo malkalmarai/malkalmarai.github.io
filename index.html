@@ -870,7 +870,11 @@ Amazon Now و Amazon Bazaar
   const routeHash = () => {
     if (toList) { toList = false; closeView(); history.replaceState(null, '', location.pathname + location.search); const w = document.getElementById('work'); w && requestAnimationFrame(() => requestAnimationFrame(() => w.scrollIntoView({ block: 'start', behavior: 'instant' }))); return; }
     const h = decodeURIComponent(location.hash.slice(1));
-    if (/^[wc]-/.test(h)) { if (!openView(h)) closeView(); }
+    if (/^[wc]-/.test(h)) {
+      const t = document.getElementById(h);
+      if (t && t.classList.contains('view') && !(history.state && history.state.d)) history.replaceState({ v: h, d: 1, r: 1 }, '', location.href);
+      if (!openView(h)) closeView();
+    }
     else closeView();
   };
   document.addEventListener('click', e => {
@@ -878,25 +882,26 @@ Amazon Now و Amazon Bazaar
     if (!a || e.metaKey || e.ctrlKey || e.shiftKey) return;
     e.preventDefault();
     const id = a.getAttribute('href').slice(1);
-    const d = ((history.state && history.state.d) || 0) + 1;
-    history.pushState({ v: id, d }, '', '#' + id);
+    const s = history.state || {};
+    history.pushState({ v: id, d: (s.d || 0) + 1, r: s.r ? 1 : 0 }, '', '#' + id);
     openView(id);
   });
   addEventListener('popstate', routeHash);
   addEventListener('hashchange', routeHash);
-  /* «العودة للأعمال»: يظهر من ثاني صفحة في نفس الرحلة، ويرجع لمكان البداية (المجلد أو البحث أو أعمال مختارة) بحالته */
-  const homeB = $('#toWorks'); const deep = !!(location.hash && /^#[wc]-/.test(location.hash) && !(history.state && history.state.d));
+  /* «العودة للأعمال»: يظهر من ثاني صفحة في نفس الرحلة، ويرجع لمكان البداية (المجلد أو البحث أو أعمال مختارة) بحالته.
+     d = ترتيب الصفحة في الرحلة، وr = الرحلة بدأت من رابط مباشر لعمل (فأول صفحة هي نفسها مدخل الرحلة) */
+  const homeB = $('#toWorks');
   let toList = false;
-  const depth = () => ((history.state && history.state.d) || 0) + (deep ? 1 : 0);
-  const syncHome = () => { homeB.hidden = !(current && depth() >= 2); };
+  const syncHome = () => { const s = history.state; homeB.hidden = !(current && s && s.d >= 2); };
   homeB.addEventListener('click', () => {
-    const d = (history.state && history.state.d) || 0;
-    if (deep) toList = true;
-    if (d > 0) history.go(-d);
-    else { closeView(); history.replaceState(null, '', location.pathname + location.search); }
+    const s = history.state || {}; const n = s.r ? (s.d || 1) - 1 : (s.d || 0);
+    if (s.r) toList = true;
+    if (n > 0) history.go(-n);
+    else { toList = false; closeView(); history.replaceState(null, '', location.pathname + location.search); }
   });
   const goBack = () => {
-    if (history.state && history.state.d > 0) history.back();
+    const s = history.state;
+    if (s && s.d > 0 && !(s.r && s.d === 1)) history.back();
     else { closeView(); history.replaceState(null, '', location.pathname + location.search); }
   };
   $('#back').addEventListener('click', goBack);
